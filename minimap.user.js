@@ -7,8 +7,8 @@
 // @grant       GM.xmlHttpRequest
 // @author      Ponywka, bb010g
 // @license     Apache-2.0 OR ISC
-// @downloadURL https://raw.githubusercontent.com/StarshinePony/2022-minimap/d/main/minimap.user.js
-// @updateURL   https://raw.githubusercontent.com/StarshinePony/2022-minimap/d/main/minimap.user.js
+// @downloadURL https://raw.githubusercontent.com/StarshinePony/Maneplace-Bot-23/d/main/minimap.user.js
+// @updateURL   https://raw.githubusercontent.com/StarshinePony/Maneplace-Bot-23/d/main/minimap.user.js
 // @connect     raw.githubusercontent.com
 // @connect     media.githubusercontent.com
 // @require     https://unpkg.com/uhtml@2.8.1
