@@ -65,8 +65,8 @@ const { html, render } = mlp_uhtml;
   const rPlacePixelSize = 10;
   const rPlaceTemplatesGithubLfs = true;
   const rPlaceTemplateBaseUrl = rPlaceTemplatesGithubLfs
-    ? "https://media.githubusercontent.com/media/StarshinePony/Maneplace-Bot-23/d/main"
-    : "https://raw.githubusercontent.com/StarshinePony/Maneplace-Bot-23/d/main";
+    ? "https://media.githubusercontent.com/media/StarshinePony/2023-minimap/d/main"
+    : "https://raw.githubusercontent.com/StarshinePony/2023-minimap/d/main";
   const getRPlaceTemplateUrl = function (templateName, type) {
     return `${rPlaceTemplateBaseUrl}/${templateName}/${type}.png`;
   };
