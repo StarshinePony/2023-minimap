@@ -2,7 +2,7 @@
 // @name        Maneplace Template Overlayscript 
 // @namespace   http://tampermonkey.net/
 // @description MLP Minimap r/Place
-// @match       https://place.equestria.dev/embed*
+// @match       https://place.manechat.net/*
 // @version     0.4
 // @grant       GM.xmlHttpRequest
 // @author      Ponywka, bb010g
