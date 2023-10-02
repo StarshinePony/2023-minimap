@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        r/Place MLP Minimap 🇺🇦 #StandWithUkraine
+// @name        Maneplace Template Overlayscript 
 // @namespace   http://tampermonkey.net/
 // @description MLP Minimap r/Place
 // @match       https://place.equestria.dev/embed*
