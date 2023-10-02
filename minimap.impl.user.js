@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name        Test-Place Bot 
+// @name        Mane Place Minimap
 // @namespace   http://tampermonkey.net/
 // @description BONEYS
-// @match       https://place.equestria.dev/embed*
+// @match       https://place.manechat.net/*
 // @version     0.3
 // @grant       GM.xmlHttpRequest
-// @author      Ponywka, bb010g, Starshine, Daaniea
+// @author      Starshine
 // @license     Apache-2.0 OR ISC
 // @connect     raw.githubusercontent.com
 // @connect     media.githubusercontent.com
@@ -26,11 +26,10 @@ const { html, render } = mlp_uhtml;
 (async function () {
   //document.querySelector("faceplate-toast")
   //document.createElement('mona-lisa-app').isFullScreen.globalState.state = true;
-
   const embed = await new Promise((resolve) => {
     let interval = setInterval(() => {
       try {
-        const embed = document.querySelector("mona-lisa-embed");
+        const embed = document.getElementById("main");
         console.log("Found embed. Good!");
         resolve(embed);
         clearInterval(interval);
@@ -39,13 +38,23 @@ const { html, render } = mlp_uhtml;
       }
     }, 1000);
   });
+  const picker = await new Promise((resolve) => {
+    let interval = setInterval(() => {
+      try {
+        const embed = document.getElementById("picker");
+        console.log("Found picker. Good!");
+        resolve(embed);
+        clearInterval(interval);
+      } catch (e) {
+        console.error("Found picker. Trying again...");
+      }
+    }, 1000);
+  });
 
   const rPlaceCanvas = await new Promise((resolve) => {
     let interval = setInterval(() => {
       try {
-        const rPlaceCanvas = embed.shadowRoot
-          .querySelector("mona-lisa-share-container mona-lisa-canvas")
-          .shadowRoot.querySelector("canvas");
+        const rPlaceCanvas = document.getElementById("canvas");
         console.log("Found canvas. Good!");
         resolve(rPlaceCanvas);
         clearInterval(interval);
@@ -55,12 +64,9 @@ const { html, render } = mlp_uhtml;
     }, 1000);
   });
 
-  // Move camera to center
-  embed.camera.applyPosition({
-    x: Math.floor(rPlaceCanvas.width / 2),
-    y: Math.floor(rPlaceCanvas.height / 2),
-    zoom: 0,
-  });
+
+
+  embed.style.transform = "matrix(1, 0, 0, 1, " + (rPlaceCanvas.width) + ", " + (rPlaceCanvas.height / 4) + ")";
 
   const rPlacePixelSize = 10;
   const rPlaceTemplatesGithubLfs = true;
@@ -153,8 +159,7 @@ const { html, render } = mlp_uhtml;
     }
   };
 
-  addRPlaceTemplate("Test-Stuff", { bot: true, mask: true });
-  addRPlaceTemplate("mlp", { bot: true, mask: true });
+  addRPlaceTemplate("maneplace", { bot: true, mask: true });
   addTemplatesFromStorage();
   setRPlaceTemplate(rPlaceTemplateNames[0]);
 
@@ -210,12 +215,31 @@ const { html, render } = mlp_uhtml;
 
   class PosParser extends Emitter {
     parseCoordinateBlock() {
-      const parsedData = this.coordinateBlock.innerText.match(/\(([0-9]+),([0-9]+)\) ([0-9.]+)x/);
+      var selector = document.getElementById("selector");
+
+      // Get the transform property value
+      var transformStyle = window.getComputedStyle(selector).getPropertyValue("transform");
+
+      // Parse the transform matrix to extract the X and Y coordinates
+      var transformValues = transformStyle.match(/matrix\(([^)]+)\)/)[1].split(',');
+      // Get the element with id "main"
+      var main = document.getElementById("main");
+
+      // Get the transform property value
+      var transformScale = window.getComputedStyle(main).getPropertyValue("transform");
+
+      // Parse the transform matrix to extract the scale value
+      var tras = transformScale.match(/matrix\(([^)]+)\)/)[1].split(',');
+
+      // Extract the scale value (the 4th number in the matrix)
+      var scale = parseFloat(transformScale[3]);
+      const parsedData = transformValues
+      const scaleData = tras
       if (parsedData) {
         return {
-          x: parseInt(parsedData[1]),
-          y: parseInt(parsedData[2]),
-          scale: parseFloat(parsedData[3]),
+          x: parseInt(parsedData[4]),
+          y: parseInt(parsedData[5]),
+          scale: parseFloat(scaleData[3] / 4),
         };
       }
       return {
@@ -249,20 +273,33 @@ const { html, render } = mlp_uhtml;
   const coordinateBlock = await new Promise((resolve) => {
     let interval = setInterval(() => {
       try {
-        const coordinateBlock = embed.shadowRoot
-          .querySelector("mona-lisa-coordinates")
-          .shadowRoot.querySelector("div");
-        console.log("Found coordinate block. Good!");
+        var selector = document.getElementById("selector");
+
+        // Get the transform property value
+        var transformStyle = window.getComputedStyle(selector).getPropertyValue("transform");
+
+        // Parse the transform matrix to extract the X and Y coordinates
+        var transformValues = transformStyle.match(/matrix\(([^)]+)\)/)[1].split(',');
+
+        // Extract the X and Y coordinates
+        var translateX = parseFloat(transformValues[4]);
+        var translateY = parseFloat(transformValues[5]);
+        const coordinateBlock = transformStyle;
+
+        // Get the element with id "selector"
         resolve(coordinateBlock);
         clearInterval(interval);
+        console.log("Found Coordinate Block YAY!");
       } catch (e) {
+
         console.error("Failed to attach to coordinate block. Trying again...");
+        console.log("X Coordinate: " + translateX);
+        console.log("Y Coordinate: " + translateY);
       }
     }, 1000);
   });
 
   const posParser = new PosParser(coordinateBlock);
-
   const docBody = document.querySelector("body");
   const htmlBlock = `<style>
   mlpminimap {
@@ -551,7 +588,7 @@ const { html, render } = mlp_uhtml;
   settings.addSetting(
     "deleteTemplate",
     new ButtonSetting("Delete current template", () => {
-      if (rPlaceTemplateName === "mlp" || rPlaceTemplateName === "Test-Stuff") {
+      if (rPlaceTemplateName === "mlp" || rPlaceTemplateName === "mlp-hearts") {
         alert("Can't delete the default template!");
         return;
       }
@@ -567,84 +604,22 @@ const { html, render } = mlp_uhtml;
     })
   );
   settings.addSetting(
-    "findArt",
-    new ButtonSetting("Find our art!", function () {
-      findNextArt();
-    })
-  );
-  settings.addSetting(
     "autoColor",
-    new CheckboxSetting("Auto color picker", false, function (autoColorSetting) {
+    new CheckboxSetting("Auto color picker", false, function (autoColorPicker) {
       settings.getSetting("bot").enabled = false;
       updateTemplate();
     })
   );
   settings.addSetting(
     "bot",
-    new CheckboxSetting("Bot", false, function (botSetting) {
+    new CheckboxSetting("This is broken i'm sorry don't click it", false, function (botSetting) {
       settings.getSetting("autoColor").enabled = false;
       updateTemplate();
     })
   );
   settings.addSetting(
-    "botstability",
-    new CheckboxSetting("Bot stability (🔇 Need to mute tab)", false)
-  );
-  settings.addSetting(
     "pixelDisplayProgress",
     new DisplaySetting("Current progress", "Unknown", true)
-  );
-
-  settings.addSetting(
-    "pythonBot",
-    new ButtonSetting("Python bot", function (pythonBotSetting) {
-      window.open("https://github.com/CloudburstSys/PonyPixel");
-    })
-  );
-
-  const newDonateSetting = function (name, url) {
-    return new ButtonSetting(`Donate (${name})`, function (donateSetting) {
-      window.open(url);
-    });
-  };
-  settings.addSetting(
-    "donatePonywka",
-    newDonateSetting(
-      "Midnight Ponywka - primary dev, MLP template",
-      "https://www.donationalerts.com/r/vovskic2002"
-    )
-  );
-  settings.addSetting(
-    "donateCloudburstSys",
-    newDonateSetting(
-      "Twi/Leah (@CloudburstSys) - primary Python dev",
-      "https://ko-fi.com/cloudburstsys"
-    )
-  );
-  settings.addSetting(
-    "donateAlchEmi",
-    newDonateSetting(
-      "Ember Hearth (@Alch-Emi) - dev (priority, progress)",
-      "https://paypal.me/alchemi336"
-    )
-  );
-  settings.addSetting(
-    "donateBb010g",
-    newDonateSetting(
-      "Dusk 💛 💜 (@bb010g) - dev (GitHub org, dev install, multi-template, UI, bot), r/ainbowroad template",
-      "https://www.tgijp.org/"
-    )
-  );
-  settings.addSetting(
-    "donateOctylFractal",
-    newDonateSetting(
-      "octylFractal - dev (bugfixes), MLP template",
-      "https://github.com/sponsors/octylFractal"
-    )
-  );
-  settings.addSetting(
-    "donateLumiereEleve",
-    newDonateSetting("Lumière Élevé - Python dev", "https://buymeacoffee.com/belkasempaiowo")
   );
 
   let botLock = false;
@@ -867,38 +842,73 @@ const { html, render } = mlp_uhtml;
     };
   }
 
-  const paletteButtons = embed.shadowRoot
-    .querySelector("mona-lisa-color-picker")
-    .shadowRoot.querySelectorAll(".palette button.color");
+  const colorElements = document.querySelectorAll("#colors .color");
   const palette = [];
-  for (const paletteButton of paletteButtons) {
-    const parsedData = paletteButton.children[0].style.backgroundColor.match(
-      /rgb\(([0-9]{1,3}), ([0-9]{1,3}), ([0-9]{1,3})\)/
-    );
-    const colorID = parseInt(paletteButton.getAttribute("data-color"));
-    if (parsedData) {
-      palette.push([parsedData[1], parsedData[2], parsedData[3], colorID]);
-    } else {
-      palette.push([0, 0, 0, -1]);
+
+  for (const colorElement of colorElements) {
+    const dataColor = colorElement.getAttribute("data-color");
+    console.log(dataColor)
+    const style = colorElement.style.backgroundColor;
+
+    // Extract RGB values from the style property
+    const matches = style.match(/rgb\((\d+), (\d+), (\d+)\)/);
+
+    if (matches) {
+      const red = matches[1];
+      const green = matches[2];
+      const blue = matches[3];
+      palette.push({
+        dataColor: parseInt(dataColor),
+        rgb: `rgb(${red}, ${green}, ${blue})`,
+      });
     }
   }
 
+  console.log(palette);
+
+  function getColorElementById(colorId) {
+    return document.querySelector(`#colors .color[data-color="${colorId}"]`);
+  }
+
+  // Usage example:
+  // Pass the color ID you want to fetch the element for
+  let colorIdToFetch = 0; // Replace with the desired color ID
   function autoColorPick(imageData) {
     if (imageData.data[3] !== 255) return;
 
     const r = imageData.data[0];
     const g = imageData.data[1];
     const b = imageData.data[2];
+
+    const colorElements = document.querySelectorAll("#colors .color");
+
     let diff = [];
-    for (const color of palette) {
-      diff.push(Math.abs(r - color[0]) + Math.abs(g - color[1]) + Math.abs(b - color[2]));
+    for (const colorElement of colorElements) {
+      const [, rValue, gValue, bValue] = colorElement.style.backgroundColor.match(/rgb\((\d+), (\d+), (\d+)\)/);
+
+      const colorDiff = Math.abs(r - parseInt(rValue)) + Math.abs(g - parseInt(gValue)) + Math.abs(b - parseInt(bValue));
+      diff.push(colorDiff);
     }
+
     let correctColorID = 0;
     for (let i = 0; i < diff.length; i++) {
       if (diff[correctColorID] > diff[i]) correctColorID = i;
     }
 
-    embed.selectedColor = palette[correctColorID][3];
+    // Reset the class for all color elements to "color"
+    colorElements.forEach((colorElement) => {
+      colorElement.classList.remove("picked");
+    });
+
+    // Set the class of the selected color element to "color picked"
+    colorElements[correctColorID].classList.add("picked");
+
+    // Do something with the selectedColor, for example, log it
+    const selectedColor = colorElements[correctColorID].getAttribute("data-color");
+    const element = getColorElementById(selectedColor)
+    console.log(element)
+    pickColor(element)
+    console.log("Selected Color: " + selectedColor);
   }
 
   function intToHex(int1) {
