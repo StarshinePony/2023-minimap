@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Maneplace Template Overlayscript 
 // @namespace   http://tampermonkey.net/
-// @description MLP Minimap r/Place
+// @description Maneplace Userscript
 // @match       https://place.manechat.net/*
 // @version     0.4
 // @grant       GM.xmlHttpRequest
@@ -12,9 +12,6 @@
 // @connect     raw.githubusercontent.com
 // @connect     media.githubusercontent.com
 // @require     https://unpkg.com/uhtml@2.8.1
-// ==/UserScript==
-// SPDX-FileCopyrightText: 2022 Ponywka
-// SPDX-License-Identifier: Apache-2.0 OR ISC
 
 const _TamperRoot = this;
 (async function () {
