@@ -72,8 +72,8 @@ const { html, render } = mlp_uhtml;
   const rPlacePixelSize = 10;
   const rPlaceTemplatesGithubLfs = true;
   const rPlaceTemplateBaseUrl = rPlaceTemplatesGithubLfs
-    ? "https://media.githubusercontent.com/media/StarshinePony/2023-minimap/d/main"
-    : "https://raw.githubusercontent.com/StarshinePony/2023-minimap/d/main";
+    ? "https://media.githubusercontent.com/media/StarshinePony/2023-minimap/main"
+    : "https://raw.githubusercontent.com/StarshinePony/2023-minimap/main";
   const getRPlaceTemplateUrl = function (templateName, type) {
     return `${rPlaceTemplateBaseUrl}/${templateName}/${type}.png`;
   };
