@@ -240,7 +240,7 @@ const { html, render } = mlp_uhtml;
         return {
           x: parseInt(parsedData[4]),
           y: parseInt(parsedData[5]),
-          scale: parseFloat(scaleData[3] / 6),
+          scale: parseFloat(scaleData[3] / 12),
         };
       }
       return {
