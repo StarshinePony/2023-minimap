@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Maneplace Template Overlayscript
+// @name        Maneplace Template Minimap Script with Auto Updater
 // @namespace   http://tampermonkey.net/
 // @description MLP Minimap r/Place
 // @match       https://place.manechat.net/*
