@@ -65,10 +65,6 @@ const { html, render } = mlp_uhtml;
     }, 1000);
   });
 
-
-
-  embed.style.transform = "matrix(1, 0, 0, 1, " + (rPlaceCanvas.width) + ", " + (rPlaceCanvas.height / 4) + ")";
-
   const rPlacePixelSize = 10;
   const rPlaceTemplatesGithubLfs = true;
   const rPlaceTemplateBaseUrl = rPlaceTemplatesGithubLfs
