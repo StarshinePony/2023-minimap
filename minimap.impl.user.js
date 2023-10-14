@@ -11,6 +11,7 @@
 // @updateURL   https://github.com/StarshinePony/2023-minimap/raw/main/minimap.user.js
 // @connect     raw.githubusercontent.com
 // @connect     media.githubusercontent.com
+// @connect     media.discordapp.net
 // @connect     *
 // @require     https://unpkg.com/uhtml@2.8.1
 // ==/UserScript==
