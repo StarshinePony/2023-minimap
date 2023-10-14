@@ -156,8 +156,9 @@ const { html, render } = mlp_uhtml;
     }
   };
 
+
+  addRPlaceTemplate("mareplace", { bot: true, mask: true });
   addRPlaceTemplate("maneplace", { bot: true, mask: true });
-  //addRPlaceTemplate("mareplace", { bot: true, mask: true })
   addTemplatesFromStorage();
   setRPlaceTemplate(rPlaceTemplateNames[0]);
 
