@@ -238,7 +238,7 @@ const { html, render } = mlp_uhtml;
         return {
           x: parseInt(parsedData[4]),
           y: parseInt(parsedData[5]),
-          scale: parseFloat(scaleData[3] / 12),
+          scale: parseFloat(scaleData[3] / 10),
         };
       }
       return {
