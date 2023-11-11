@@ -66,6 +66,21 @@ const { html, render } = mlp_uhtml;
     }, 1000);
   });
 
+  const selector = await new Promise((resolve) => {
+    let interval = setInterval(() => {
+      try {
+        const selector = document.getElementById("selector");
+        console.log("Found selector! Good!");
+        resolve(selector);
+        clearInterval(interval);
+      } catch (e) {
+        console.error("Failed to attach to selector. Trying again...");
+      }
+    }, 1000);
+  });
+
+  //bed.style.transform = "matrix(1, 0, 0, 1, " + (rPlaceCanvas.width) + ", " + (rPlaceCanvas.height / 4) + ")";
+
   const rPlacePixelSize = 10;
   const rPlaceTemplatesGithubLfs = true;
   const rPlaceTemplateBaseUrl = rPlaceTemplatesGithubLfs
@@ -157,7 +172,6 @@ const { html, render } = mlp_uhtml;
     }
   };
 
-
   addRPlaceTemplate("mareplace", { bot: true, mask: true });
   addTemplatesFromStorage();
   setRPlaceTemplate(rPlaceTemplateNames[0]);
@@ -238,7 +252,7 @@ const { html, render } = mlp_uhtml;
         return {
           x: parseInt(parsedData[4]),
           y: parseInt(parsedData[5]),
-          scale: parseFloat(scaleData[3] / 10),
+          scale: parseFloat(scaleData[3] / 9),
         };
       }
       return {
@@ -610,11 +624,25 @@ const { html, render } = mlp_uhtml;
     })
   );
   settings.addSetting(
-    "bot",
-    new CheckboxSetting("This is broken i'm sorry don't click it", false, function (botSetting) {
+    "autoHexPicker",
+    new CheckboxSetting("Auto hex picker", false, function (autoHexPicker) {
+      settings.getSetting("bot").enabled = false;
       settings.getSetting("autoColor").enabled = false;
       updateTemplate();
     })
+  );
+  settings.addSetting(
+    "bot",
+    new CheckboxSetting("Bot", false, function (botSetting) {
+      settings.getSetting("autoColor").enabled = false;
+      settings.getSetting("bot").enabled = false;
+      settings.getSetting("autoHexPicker").enabled = false;
+      updateTemplate();
+    })
+  );
+  settings.addSetting(
+    "botstability",
+    new CheckboxSetting("Bot stability (🔇 Need to mute tab)", false)
   );
   settings.addSetting(
     "pixelDisplayProgress",
@@ -764,7 +792,7 @@ const { html, render } = mlp_uhtml;
     return bucket[Math.floor(Math.random() * bucket.length)];
   }
 
-  const FOCUS_AREA_SIZE = 75;
+  const FOCUS_AREA_SIZE = 1;
   /**
    * Select a random pixel weighted by the mask.
    *
@@ -905,9 +933,89 @@ const { html, render } = mlp_uhtml;
     // Do something with the selectedColor, for example, log it
     const selectedColor = colorElements[correctColorID].getAttribute("data-color");
     const element = getColorElementById(selectedColor)
-    console.log(element)
     pickColor(element)
-    console.log("Selected Color: " + selectedColor);
+  }
+  function rgbToHex(r, g, b) {
+    // Ensure that the values are within the valid range
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+
+    // Convert each component to a two-digit hex code
+    const hexR = r.toString(16).padStart(2, '0');
+    const hexG = g.toString(16).padStart(2, '0');
+    const hexB = b.toString(16).padStart(2, '0');
+
+    // Concatenate the hex codes
+    return `#${hexR}${hexG}${hexB}`;
+  }
+  function createColorElement(imageData) {
+    if (imageData.data[3] !== 255) return;
+
+    const r = imageData.data[0];
+    const g = imageData.data[1];
+    const b = imageData.data[2];
+    let color = rgbToHex(r, g, b)
+
+
+    const hexColorContainer = document.getElementById("hexColor")
+
+
+    let hexWithoutHash = color.startsWith("#") ? color.slice(1) : color;
+    let rgbInt = parseInt(hexWithoutHash, 16);
+    hexColorContainer.innerHTML = "";
+    const colorButton = document.createElement("div");
+    colorButton.className = "color";
+    colorButton.dataset.color = rgbInt;
+    colorButton.style.backgroundColor = rgbIntToHex(rgbInt);
+    colorButton.onpointerup = () => pickColor(colorButton);
+    hexColorContainer.appendChild(colorButton)
+  }
+  function autoHexPick() {
+
+
+    const hexColorContainer = document.getElementById("hexColor")
+    const colorElement = hexColorContainer.querySelector(".color")
+
+    // Do something with the selectedColor, for example, log it
+    //const selectedColor = colorElements.getAttribute("data-color");
+    //const element = getColorElementById(selectedColor)
+    pickColor(colorElement)
+  }
+  function botPick(imageData) {
+    if (imageData.data[3] !== 255) return;
+
+    const r = imageData.data[0];
+    const g = imageData.data[1];
+    const b = imageData.data[2];
+
+    const colorElements = document.querySelectorAll("#colors .color");
+
+    let diff = [];
+    for (const colorElement of colorElements) {
+      const [, rValue, gValue, bValue] = colorElement.style.backgroundColor.match(/rgb\((\d+), (\d+), (\d+)\)/);
+
+      const colorDiff = Math.abs(r - parseInt(rValue)) + Math.abs(g - parseInt(gValue)) + Math.abs(b - parseInt(bValue));
+      diff.push(colorDiff);
+    }
+
+    let correctColorID = 0;
+    for (let i = 0; i < diff.length; i++) {
+      if (diff[correctColorID] > diff[i]) correctColorID = i;
+    }
+
+    // Reset the class for all color elements to "color"
+    colorElements.forEach((colorElement) => {
+      colorElement.classList.remove("picked");
+    });
+
+    // Set the class of the selected color element to "color picked"
+    colorElements[correctColorID].classList.add("picked");
+
+    // Do something with the selectedColor, for example, log it
+    const selectedColor = colorElements[correctColorID].getAttribute("data-color");
+    const element = getColorElementById(selectedColor)
+    return element.dataset.color
   }
 
   function intToHex(int1) {
@@ -943,6 +1051,15 @@ const { html, render } = mlp_uhtml;
         console.error(e);
       }
     }
+    if (settings.getSetting("autoHexPicker").enabled) {
+      try {
+        const imageData = ctx.getImageData(posParser.pos.x, posParser.pos.y, 1, 1);
+        createColorElement(imageData);
+        autoHexPick();
+      } catch (e) {
+        console.error(e);
+      }
+    }
   });
 
   const botCanvas = document.createElement("canvas");
@@ -973,7 +1090,35 @@ const { html, render } = mlp_uhtml;
 
     return [diff, nCisPixels];
   }
+  async function placeColorr(x, y, color) {
+    if (!selectedColor || cooldown > 0) {
+      return errorSound.play();
+    }
 
+    const placedRes = await fetch("/place_NC",
+      {
+        method: "POST",
+        headers: new Headers({ "content-type": "application/json" }),
+        body: JSON.stringify({ x, y, color })
+      });
+
+    if (!placedRes.ok) {
+      return reloadPage();
+    }
+
+    const placed = (await placedRes.json()).placed;
+
+    if (!placed) {
+      return errorSound.play();
+    }
+
+    picker.classList.remove("open");
+
+    placeSound.play();
+
+    unpickColor();
+    startCooldown(maxCooldown);
+  }
   function waitMs(ms) {
     return new Promise((resolve) =>
       setTimeout(() => {
@@ -989,9 +1134,21 @@ const { html, render } = mlp_uhtml;
   function logError() {
     console.error(`[${new Date().toISOString()}]`, ...arguments);
   }
+  function getColorById(colorId) {
+    const colorElements = document.querySelectorAll("#colors .color");
 
-  const botTimeout = 5000;
-  const botAfterPlaceTimeout = 3000;
+    for (const colorElement of colorElements) {
+      const dataColor = colorElement.getAttribute("data-color");
+      if (dataColor === colorId.toString()) {
+        return colorElement;
+      }
+    }
+
+    // Return null if the color element with the specified ID is not found
+    return null;
+  }
+  const botTimeout = 10;
+  const botAfterPlaceTimeout = 10;
   (async () => {
     while (true) {
       // Update the minimap image (necessary for checking the diff)
@@ -1017,7 +1174,6 @@ const { html, render } = mlp_uhtml;
         if (rPlaceTemplate.botUrl === undefined) {
           return;
         }
-        embed.wakeUp();
 
         if (settings.getSetting("botstability").enabled) {
           // Move camera to center
@@ -1028,28 +1184,49 @@ const { html, render } = mlp_uhtml;
           });
         }
 
-        const timeOutPillBlock = embed.shadowRoot
-          .querySelector("mona-lisa-status-pill")
-          .shadowRoot.querySelector("div");
         log(
-          `Status: ${percentage}% (${nMissingPixels}/${nCisPixels}) [${timeOutPillBlock.innerText}]`
+          `Status: ${percentage}% (${nMissingPixels}/${nCisPixels})]`
         );
+        const progress = convertTimer()
+        const timeString = progress; // Replace with your time value
 
-        if (!embed.nextTileAvailableIn && diff.length > 0) {
+        // Split the timeString by the ":" delimiter to separate hours and minutes
+        const timeParts = timeString.split(":");
+
+        // Extract the seconds (which is the second part)
+        const seconds = parseInt(timeParts[1]);
+        console.log(progress)
+
+        if (!seconds > 0) {
           const randPixel = selectRandomPixel(diff);
           const imageDataRight = ctx.getImageData(randPixel.x, randPixel.y, 1, 1);
           autoColorPick(imageDataRight);
-          embed.camera.applyPosition(randPixel);
-          embed.showColorPicker = true;
-          const selectedColor = embed.selectedColor;
-          embed
-            .onConfirmPixel()
-            .then(() => {
-              log(`Placed [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
-            })
-            .catch(() => {
-              logError(`FAILED! [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
-            });
+          // Parse the transformation matrix of the main element
+          // Given selector coordinates as integers
+          const selectorX = randPixel.x; // Example X coordinate (integer)
+          const selectorY = randPixel.y; // Example Y coordinate (integer)
+
+          // Parse the transformation matrix of the main element
+          const mainElement = document.getElementById("main");
+          const transformMatrix = mainElement.style.transform.match(/matrix\((.*?)\)/)[1].split(',').map(parseFloat);
+
+          // Extract the scale factor from the matrix (first value)
+          const scaleFactor = transformMatrix[0];
+          const transform = instance.getTransform();
+          const color = botPick(imageDataRight);
+          placeColorr(selectorX, selectorY, color)
+
+
+
+          // Now, screenSelectorX and screenSelectorY contain the screen coordinates of the selector as floats
+
+          const selectedColor = document.querySelector("#colors .color.picked");
+          try {
+            //placeColor()
+            console.log(`Placed [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
+          } catch (e) {
+            console.error("Failed to place pixel.");
+          }
           await waitMs(botAfterPlaceTimeout);
         }
       }
