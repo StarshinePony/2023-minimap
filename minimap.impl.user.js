@@ -631,7 +631,7 @@ const { html, render } = mlp_uhtml;
       updateTemplate();
     })
   );
-  settings.addSetting(
+  /*settings.addSetting(
     "bot",
     new CheckboxSetting("Bot", false, function (botSetting) {
       settings.getSetting("autoColor").enabled = false;
@@ -643,7 +643,7 @@ const { html, render } = mlp_uhtml;
   settings.addSetting(
     "botstability",
     new CheckboxSetting("Bot stability (🔇 Need to mute tab)", false)
-  );
+  );*/
   settings.addSetting(
     "pixelDisplayProgress",
     new DisplaySetting("Current progress", "Unknown", true)
@@ -1147,7 +1147,7 @@ const { html, render } = mlp_uhtml;
     // Return null if the color element with the specified ID is not found
     return null;
   }
-  const botTimeout = 10;
+  /*const botTimeout = 10;
   const botAfterPlaceTimeout = 10;
   (async () => {
     while (true) {
@@ -1233,7 +1233,7 @@ const { html, render } = mlp_uhtml;
 
       await waitMs(botTimeout);
     }
-  })().then((r) => { });
+  })().then((r) => { });*/
 })();
 
 // vim:et:sw=2
