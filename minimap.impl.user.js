@@ -631,7 +631,7 @@ const { html, render } = mlp_uhtml;
       updateTemplate();
     })
   );
-  /*settings.addSetting(
+  settings.addSetting(
     "bot",
     new CheckboxSetting("Bot", false, function (botSetting) {
       settings.getSetting("autoColor").enabled = false;
@@ -643,7 +643,7 @@ const { html, render } = mlp_uhtml;
   settings.addSetting(
     "botstability",
     new CheckboxSetting("Bot stability (🔇 Need to mute tab)", false)
-  );*/
+  );
   settings.addSetting(
     "pixelDisplayProgress",
     new DisplaySetting("Current progress", "Unknown", true)
@@ -1061,7 +1061,6 @@ const { html, render } = mlp_uhtml;
       }
     }
   });
-
   const botCanvas = document.createElement("canvas");
   botCanvas.width = rPlaceCanvas.width;
   botCanvas.height = rPlaceCanvas.height;
@@ -1090,35 +1089,7 @@ const { html, render } = mlp_uhtml;
 
     return [diff, nCisPixels];
   }
-  async function placeColorr(x, y, color) {
-    if (!selectedColor || cooldown > 0) {
-      return errorSound.play();
-    }
 
-    const placedRes = await fetch("/place_NC",
-      {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ x, y, color })
-      });
-
-    if (!placedRes.ok) {
-      return reloadPage();
-    }
-
-    const placed = (await placedRes.json()).placed;
-
-    if (!placed) {
-      return errorSound.play();
-    }
-
-    picker.classList.remove("open");
-
-    placeSound.play();
-
-    unpickColor();
-    startCooldown(maxCooldown);
-  }
   function waitMs(ms) {
     return new Promise((resolve) =>
       setTimeout(() => {
@@ -1134,21 +1105,9 @@ const { html, render } = mlp_uhtml;
   function logError() {
     console.error(`[${new Date().toISOString()}]`, ...arguments);
   }
-  function getColorById(colorId) {
-    const colorElements = document.querySelectorAll("#colors .color");
 
-    for (const colorElement of colorElements) {
-      const dataColor = colorElement.getAttribute("data-color");
-      if (dataColor === colorId.toString()) {
-        return colorElement;
-      }
-    }
-
-    // Return null if the color element with the specified ID is not found
-    return null;
-  }
-  /*const botTimeout = 10;
-  const botAfterPlaceTimeout = 10;
+  const botTimeout = 5000;
+  const botAfterPlaceTimeout = 3000;
   (async () => {
     while (true) {
       // Update the minimap image (necessary for checking the diff)
@@ -1174,6 +1133,7 @@ const { html, render } = mlp_uhtml;
         if (rPlaceTemplate.botUrl === undefined) {
           return;
         }
+        embed.wakeUp();
 
         if (settings.getSetting("botstability").enabled) {
           // Move camera to center
@@ -1184,56 +1144,35 @@ const { html, render } = mlp_uhtml;
           });
         }
 
+        const timeOutPillBlock = embed.shadowRoot
+          .querySelector("mona-lisa-status-pill")
+          .shadowRoot.querySelector("div");
         log(
-          `Status: ${percentage}% (${nMissingPixels}/${nCisPixels})]`
+          `Status: ${percentage}% (${nMissingPixels}/${nCisPixels}) [${timeOutPillBlock.innerText}]`
         );
-        const progress = convertTimer()
-        const timeString = progress; // Replace with your time value
 
-        // Split the timeString by the ":" delimiter to separate hours and minutes
-        const timeParts = timeString.split(":");
-
-        // Extract the seconds (which is the second part)
-        const seconds = parseInt(timeParts[1]);
-        console.log(progress)
-
-        if (!seconds > 0) {
+        if (!embed.nextTileAvailableIn && diff.length > 0) {
           const randPixel = selectRandomPixel(diff);
           const imageDataRight = ctx.getImageData(randPixel.x, randPixel.y, 1, 1);
           autoColorPick(imageDataRight);
-          // Parse the transformation matrix of the main element
-          // Given selector coordinates as integers
-          const selectorX = randPixel.x; // Example X coordinate (integer)
-          const selectorY = randPixel.y; // Example Y coordinate (integer)
-
-          // Parse the transformation matrix of the main element
-          const mainElement = document.getElementById("main");
-          const transformMatrix = mainElement.style.transform.match(/matrix\((.*?)\)/)[1].split(',').map(parseFloat);
-
-          // Extract the scale factor from the matrix (first value)
-          const scaleFactor = transformMatrix[0];
-          const transform = instance.getTransform();
-          const color = botPick(imageDataRight);
-          placeColorr(selectorX, selectorY, color)
-
-
-
-          // Now, screenSelectorX and screenSelectorY contain the screen coordinates of the selector as floats
-
-          const selectedColor = document.querySelector("#colors .color.picked");
-          try {
-            //placeColor()
-            console.log(`Placed [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
-          } catch (e) {
-            console.error("Failed to place pixel.");
-          }
+          embed.camera.applyPosition(randPixel);
+          embed.showColorPicker = true;
+          const selectedColor = embed.selectedColor;
+          embed
+            .onConfirmPixel()
+            .then(() => {
+              log(`Placed [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
+            })
+            .catch(() => {
+              logError(`FAILED! [x: ${randPixel.x}, y: ${randPixel.y}, color: ${selectedColor}]`);
+            });
           await waitMs(botAfterPlaceTimeout);
         }
       }
 
       await waitMs(botTimeout);
     }
-  })().then((r) => { });*/
+  })().then((r) => { });
 })();
 
 // vim:et:sw=2
