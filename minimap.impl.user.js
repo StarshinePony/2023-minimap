@@ -2,7 +2,7 @@
 // @name        Mane Place Minimap
 // @namespace   http://tampermonkey.net/
 // @description BONEYS
-// @match       https://place.manechat.net/*
+// @match       https://pixels.mares.place/*
 // @version     0.3
 // @grant       GM.xmlHttpRequest
 // @author      Starshine
