@@ -3,7 +3,7 @@
 // @namespace   http://tampermonkey.net/
 // @description MLP Minimap r/Place
 // @match       https://place.manechat.net/*
-// @match       https://canvas.mares.place/*
+// @match       https://pixels.mares.place/*
 // @version     0.4
 // @grant       GM.xmlHttpRequest
 // @author      Ponywka, bb010g
