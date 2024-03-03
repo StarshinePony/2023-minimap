@@ -625,7 +625,7 @@ const { html, render } = mlp_uhtml;
   );
   settings.addSetting(
     "autoHexPicker",
-    new CheckboxSetting("Auto hex picker", false, function (autoHexPicker) {
+    new CheckboxSetting("Auto hex picker", true, function (autoHexPicker) {
       settings.getSetting("bot").enabled = false;
       settings.getSetting("autoColor").enabled = false;
       updateTemplate();
