@@ -7,8 +7,8 @@
 // @grant       GM.xmlHttpRequest
 // @author      Starshine
 // @license     Apache-2.0 OR ISC
-// @downloadURL https://github.com/StarshinePony/2023-minimap/raw/main/minimap.user.js
-// @updateURL   https://github.com/StarshinePony/2023-minimap/raw/main/minimap.user.js
+// @downloadURL https://github.com/StarshinePony/2023-minimap/raw/main/minimap.impl.user.js
+// @updateURL   https://github.com/StarshinePony/2023-minimap/raw/main/minimap.impl.user.js
 // @connect     raw.githubusercontent.com
 // @connect     media.githubusercontent.com
 // @connect     media.discordapp.net
