@@ -617,6 +617,13 @@ const { html, render } = mlp_uhtml;
     })
   );
   settings.addSetting(
+    "autoRefresh",
+    new CheckboxSetting("Auto Refresh", true, function (autoReloader) {
+      console.log("Auto Refresh is enabled!")
+
+    })
+  );
+  settings.addSetting(
     "autoColor",
     new CheckboxSetting("Auto color picker", false, function (autoColorPicker) {
       settings.getSetting("bot").enabled = false;
@@ -671,6 +678,15 @@ const { html, render } = mlp_uhtml;
   function getPngDataUrlForBytes(bytes) {
     return "data:image/png;base64," + btoa(String.fromCharCode.apply(null, bytes));
   }
+  function autoReload() {
+    setTimeout(() => {
+      if (settings.getSetting("autoRefresh").enabled = true) {
+        location.reload();
+        console.log("Refreshed!");
+      }
+    }, 1 * 60 * 1000); // 1 minutes in milliseconds
+  }
+  autoReload();
 
   updateTemplate = function () {
     botLock = true;
