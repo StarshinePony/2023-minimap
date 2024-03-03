@@ -684,7 +684,7 @@ const { html, render } = mlp_uhtml;
         location.reload();
         console.log("Refreshed!");
       }
-    }, 1 * 60 * 1000); // 1 minutes in milliseconds
+    }, 1 * 60 * 1000); // 2 minutes in milliseconds
   }
   autoReload();
 
