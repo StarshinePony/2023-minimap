@@ -38,7 +38,7 @@ const { html, render } = mlp_uhtml;
       } catch (e) {
         console.error("Found embed. Trying again...");
       }
-    }, 1000);
+    }, 1);
   });
   const picker = await new Promise((resolve) => {
     let interval = setInterval(() => {
@@ -50,7 +50,7 @@ const { html, render } = mlp_uhtml;
       } catch (e) {
         console.error("Found picker. Trying again...");
       }
-    }, 1000);
+    }, 1);
   });
 
   const rPlaceCanvas = await new Promise((resolve) => {
@@ -63,7 +63,7 @@ const { html, render } = mlp_uhtml;
       } catch (e) {
         console.error("Failed to attach to canvas. Trying again...");
       }
-    }, 1000);
+    }, 1);
   });
 
   const selector = await new Promise((resolve) => {
@@ -76,7 +76,7 @@ const { html, render } = mlp_uhtml;
       } catch (e) {
         console.error("Failed to attach to selector. Trying again...");
       }
-    }, 1000);
+    }, 1);
   });
 
   //bed.style.transform = "matrix(1, 0, 0, 1, " + (rPlaceCanvas.width) + ", " + (rPlaceCanvas.height / 4) + ")";
