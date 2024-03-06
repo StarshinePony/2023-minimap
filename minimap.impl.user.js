@@ -625,14 +625,14 @@ const { html, render } = mlp_uhtml;
   );
   settings.addSetting(
     "autoColor",
-    new CheckboxSetting("Auto color picker", false, function (autoColorPicker) {
+    new CheckboxSetting("Auto color picker", true, function (autoColorPicker) {
       settings.getSetting("bot").enabled = false;
       updateTemplate();
     })
   );
   settings.addSetting(
     "autoHexPicker",
-    new CheckboxSetting("Auto hex picker", true, function (autoHexPicker) {
+    new CheckboxSetting("Auto hex picker", false, function (autoHexPicker) {
       settings.getSetting("bot").enabled = false;
       settings.getSetting("autoColor").enabled = false;
       updateTemplate();
