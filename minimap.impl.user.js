@@ -112,6 +112,7 @@ const { html, render } = mlp_uhtml;
     });
     rPlaceTemplateNames.push(templateName);
   };
+  addRPlaceTemplate("lemon", { bot: false, mask: false });
 
   const templateStoragePrefix = "template_";
   const addCustomTemplate = (name, url, urlBot, urlMask, options) => {
