@@ -3,6 +3,7 @@
 // @namespace   http://tampermonkey.net/
 // @description BONEYS
 // @match       https://pixels.mares.place/*
+// @match       https://place.manechat.net/*
 // @version     0.3
 // @grant       GM.xmlHttpRequest
 // @author      Starshine
@@ -230,31 +231,26 @@ const { html, render } = mlp_uhtml;
 
   class PosParser extends Emitter {
     parseCoordinateBlock() {
+      const placeElement = document.querySelector('#place div:nth-child(2)');
+      const coordsText = placeElement.textContent;
+      const coordsMatch = coordsText.match(/\((-?\d+),\s*(-?\d+)\)\s+([\d.]+)X/);
+      console.log(coordsMatch)
+      const x = parseInt(coordsMatch[1], 10);
+      const y = parseInt(coordsMatch[2], 10);
+      const scale = parseInt(coordsMatch[3], 10);
       var selector = document.getElementById("selector");
 
       // Get the transform property value
-      var transformStyle = window.getComputedStyle(selector).getPropertyValue("transform");
-
-      // Parse the transform matrix to extract the X and Y coordinates
-      var transformValues = transformStyle.match(/matrix\(([^)]+)\)/)[1].split(',');
-      // Get the element with id "main"
-      var main = document.getElementById("main");
-
-      // Get the transform property value
-      var transformScale = window.getComputedStyle(main).getPropertyValue("transform");
-
-      // Parse the transform matrix to extract the scale value
-      var tras = transformScale.match(/matrix\(([^)]+)\)/)[1].split(',');
+     
 
       // Extract the scale value (the 4th number in the matrix)
-      var scale = parseFloat(transformScale[3]);
-      const parsedData = transformValues
-      const scaleData = tras
+      const parsedData = coordsMatch
+      const scaleData = coordsMatch
       if (parsedData) {
         return {
-          x: parseInt(parsedData[4]),
-          y: parseInt(parsedData[5]),
-          scale: parseFloat(scaleData[3] / 9),
+          x: x + 150,
+          y: y + 150,
+          scale: scale / 9,
         };
       }
       return {
@@ -285,21 +281,74 @@ const { html, render } = mlp_uhtml;
     }
   }
 
+
+  // Function to extract and log coordinates
+  function logCoordinates() {
+    const placeElement = document.querySelector('#place div:nth-child(2)');
+
+    if (placeElement) {
+      const coordsText = placeElement.textContent;
+      const coordsMatch = coordsText.match(/\((-?\d+),\s*(-?\d+)\)/);
+
+      if (coordsMatch) {
+        const x = parseInt(coordsMatch[1], 10);
+        const y = parseInt(coordsMatch[2], 10);
+        const newCoords = `Coordinates: x = ${x}, y = ${y}`;
+
+        // Only resolve and log if the coordinates have changed
+
+          // Resolve the promise with the new coordinates
+      } else {
+        console.log('Could not extract coordinates.');
+      }
+    } else {
+      console.error('#place element not found.');
+    }
+  }
+
+  // Set up the MutationObserver to watch for changes in the #place element
+  function observeCoordinateChanges() {
+    const placeElement = document.querySelector('#place div:nth-child(2)');
+
+    if (placeElement) {
+      const observer = new MutationObserver(() => {
+        logCoordinates(); // Trigger coordinate extraction on mutation
+      });
+
+      // Observe changes in the child text node of the place element
+      observer.observe(placeElement, { characterData: true, childList: true, subtree: true });
+
+      console.log("Started observing coordinate changes.");
+    } else {
+      console.error('#place element not found. MutationObserver not set up.');
+    }
+  }
+
+  // Start observing after the page loads
+  window.addEventListener('load', function() {
+    setTimeout(observeCoordinateChanges, 1000); // Delay to ensure elements are loaded
+  });
   const coordinateBlock = await new Promise((resolve) => {
     let interval = setInterval(() => {
       try {
-        var selector = document.getElementById("selector");
+        const placeElement = document.querySelector('#place div:nth-child(2)');
+
+        const coordsText = placeElement.textContent;
+        const coordsMatch = coordsText.match(/\((-?\d+),\s*(-?\d+)\)/);
+
+
+        const x = parseInt(coordsMatch[1], 10);
+        const y = parseInt(coordsMatch[2], 10);
+        const newCoords = `Coordinates: x = ${x}, y = ${y}`;
+
 
         // Get the transform property value
-        var transformStyle = window.getComputedStyle(selector).getPropertyValue("transform");
-
-        // Parse the transform matrix to extract the X and Y coordinates
-        var transformValues = transformStyle.match(/matrix\(([^)]+)\)/)[1].split(',');
 
         // Extract the X and Y coordinates
-        var translateX = parseFloat(transformValues[4]);
-        var translateY = parseFloat(transformValues[5]);
-        const coordinateBlock = transformStyle;
+        var translateX = x + 150;
+        var translateY = y + 150;
+        const coordinateBlock = "matrix(1, 0, 0, 1, "+ translateX+", "+ translateY+")"
+        console.log(coordinateBlock)
 
         // Get the element with id "selector"
         resolve(coordinateBlock);
@@ -537,8 +586,8 @@ const { html, render } = mlp_uhtml;
   const ctx = canvas.getContext("2d");
 
   const maskCanvas = document.createElement("canvas");
-  maskCanvas.width = rPlaceCanvas.width;
-  maskCanvas.height = rPlaceCanvas.height;
+  maskCanvas.width = 300;
+  maskCanvas.height = 300;
   const maskCtx = maskCanvas.getContext("2d");
 
   imageBlock.onload = function () {
@@ -741,8 +790,8 @@ const { html, render } = mlp_uhtml;
   const NEXT_ART_MIN_DIST = 100; // art within this range is considered the same
   let currentLocationIndex = null;
   function findNextArt() {
-    const templateData = ctx.getImageData(0, 0, rPlaceCanvas.width, rPlaceCanvas.height).data;
-
+    const templateData = ctx.getImageData(0, 0, 300, 300).data;
+    rPlaceCanvas.width = 300
     const locations = [];
     for (let i = 0; i < templateData.length; i += 4) {
       if (templateData[i + 3] === 0) continue;
@@ -840,7 +889,7 @@ const { html, render } = mlp_uhtml;
     for (let i = 0; i < diff.length; i++) {
       const coords = diff[i];
       const [x, y] = coords;
-      const maskValue = rPlaceMask[x + y * rPlaceCanvas.width];
+      const maskValue = rPlaceMask[x + y * 300];
       if (maskValue === 0) {
         continue;
       }
@@ -1080,8 +1129,8 @@ const { html, render } = mlp_uhtml;
     }
   });
   const botCanvas = document.createElement("canvas");
-  botCanvas.width = rPlaceCanvas.width;
-  botCanvas.height = rPlaceCanvas.height;
+  botCanvas.width = 300;
+  botCanvas.height = 300;
   const botCtx = botCanvas.getContext("2d");
 
   function getDiff(botCanvasWidth, botCanvasHeight, botCtx, ctx) {
