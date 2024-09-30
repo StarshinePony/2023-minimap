@@ -668,7 +668,7 @@ const { html, render } = mlp_uhtml;
   );
   settings.addSetting(
     "autoRefresh",
-    new CheckboxSetting("Auto Refresh", true, function (autoReloader) {
+    new CheckboxSetting("Auto Refresh", false, function (autoReloader) {
       console.log("Auto Refresh is enabled!")
 
     })
