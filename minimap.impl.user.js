@@ -233,14 +233,13 @@ const { html, render } = mlp_uhtml;
       const placeElement = document.querySelector('#place div:nth-child(2)');
       const coordsText = placeElement.textContent;
       const coordsMatch = coordsText.match(/\((-?\d+),\s*(-?\d+)\)\s+([\d.]+)X/);
-      console.log(coordsMatch)
       const x = parseInt(coordsMatch[1], 10);
       const y = parseInt(coordsMatch[2], 10);
       const scale = parseInt(coordsMatch[3], 10);
       var selector = document.getElementById("selector");
 
       // Get the transform property value
-     
+
 
       // Extract the scale value (the 4th number in the matrix)
       const parsedData = coordsMatch
@@ -347,7 +346,6 @@ const { html, render } = mlp_uhtml;
         var translateX = x + 150;
         var translateY = y + 150;
         const coordinateBlock = "matrix(1, 0, 0, 1, "+ translateX+", "+ translateY+")"
-        console.log(coordinateBlock)
 
         // Get the element with id "selector"
         resolve(coordinateBlock);
@@ -972,8 +970,9 @@ const { html, render } = mlp_uhtml;
     const r = imageData.data[0];
     const g = imageData.data[1];
     const b = imageData.data[2];
-
-    const colorElements = document.querySelectorAll("#colors .color");
+    const p = document.getElementById('picker');
+    const colorElements = p.shadow.querySelectorAll("#colors .color");
+    console.log(colorElements)
 
     let diff = [];
     for (const colorElement of colorElements) {
@@ -989,17 +988,17 @@ const { html, render } = mlp_uhtml;
     }
 
     // Reset the class for all color elements to "color"
-    colorElements.forEach((colorElement) => {
-      colorElement.classList.remove("picked");
-    });
 
     // Set the class of the selected color element to "color picked"
-    colorElements[correctColorID].classList.add("picked");
+    if (!colorElements[correctColorID].classList.contains("picked")) colorElements[correctColorID].click(); // Click the element
+
+
+
 
     // Do something with the selectedColor, for example, log it
     const selectedColor = colorElements[correctColorID].getAttribute("data-color");
     const element = getColorElementById(selectedColor)
-    pickColor(element)
+    console.log(`Selected color: ${selectedColor}`);
   }
   function rgbToHex(r, g, b) {
     // Ensure that the values are within the valid range
